@@ -1,40 +1,45 @@
 import argparse
+import ase
 from ase import Atoms
-from ase import Atom
 import numpy as np
 # makes from I4/mmm tetragonal structure.
 # make sure you relax with varying cell size
 # make sure you relax with random displacement
 
-def get_chemical_formula(A,B,X,n_list):
+def get_chemical_formula(A,B,X,n_array):
     
-    x = str(np.sum(n_list+1))
-    y = str(np.sum(n_list))
-    z = str(np.sum(3*(n_list)+1))
+    x = str(np.sum(n_array+1))
+    y = str(np.sum(n_array))
+    z = str(np.sum(3*(n_array)+1))
 
 	return A+x+B+y+X+z
 
-def perovskite_unit(A,B,X):
-	return Atoms([A,B,X], positions=[(0,0,0),(0.5,0.5,0.5),(0.5,0.5,0),(0.5,0,0.5),(0,0.5,0.5)])
+def perovskite_layer(A,B,X,X,X):
+	return Atoms([A,B,X], 
+		         positions=[(0.5,0.5,0.5),(0,0,0),(0.5,0.5,0),(0.5,0,0.5),(0,0.5,0.5)])
 
+def rocksalt_layer(A,X):
+	return Atoms([A,X], 
+		         positions=[(0,0,0),(0.5,0.5,0)])
 
-def rocksalt_unit(A,X):
-	return Atoms([A,X], positions=[(),()])
+def create_rp_structure(A,B,X,n_array,a, b, perovskite_spacing,rocksalt_spacing):
 
-def create_rp_structure(A,B,X,n_list):
-	for number_of_layers in n_list:
+	rp_structure = Atoms()
+
+	for number_of_layers in n_array:
 		for layer_count in range(number_of_layers):
-			# create perovskite layer here
-
-		# create RockSalt layer here
+			rp_structure += perovskite_layer(A,B,X).translate([0,0,perovskite_spacing*layer_count])
+		rp_structure += rocksalt_layer(A,X).translate([0,perovskite_spacing*layer_count+rocksalt_spacing])
 
 	return Atoms
 
 def rattle_structure(Atoms):
 
-def save_structure(Atoms):
+	return Atoms.rattle(stdev=0.02, seed=1)
 
+def save_structure(Atoms,n_array,A,B,X):
 
+	ase.io.write('RP_{}_{}.cif'.format(''.join(map(str,n_array)),A+B+X), Atoms)
 
 
 if __name__ == "__main__":
