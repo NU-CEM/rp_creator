@@ -10,6 +10,6 @@ For example:
 Creates material in a high-symmetry tetragonal structure.
 After creating you will need to relax to find the equilibrium structure. 
 Importantly, you must allow the atomic positions **and** cell volume to relax.
-You most likely also want to use the `rattle` option to break symmetry and allow for distortions to lower symmetry.
+You most likely also want to use the `rattle` option to allow for distortions to lower symmetry.
 
 Use with caution as this hasn't been thoroughly tested.
