@@ -74,7 +74,7 @@ def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,
         perovskite_layer.translate(np.dot([0.5,0.5,0.5],perovskite_layer.cell))
 
     if rattle:
-        rp_structure.rattle(stdev=0.02, seed=1)
+        rp_structure.rattle(stdev=0.05, seed=1)
 
     if save:
         save_structure(rp_structure,n_array,A,B,X)
@@ -86,12 +86,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Script to generate (disordered) Ruddlesden Popper structure')
     parser.add_argument('-n', help='the number of perovskite layers between each rocksalt layer.',type=int, nargs="+" )
-    parser.add_argument('--cell_length', '-a', help="the cell length of a single perovskite unit",type=float, default=5.0)
-    parser.add_argument('--A', help="element on A-site",type=str,default='Ba')
-    parser.add_argument('--B', help="element on B-site",type=str,default='Zr')
-    parser.add_argument('--X', help="element on X-site",type=str,default='S')
-    parser.add_argument('--rattle', help="apply small random displacement to all atoms", type=bool, default=False)
-    parser.add_argument('--save', help="save structure as cif file", type=bool, default=True)
+    parser.add_argument('-a', '--cell_length', help="the cell length of a single perovskite unit",type=float, default=5.0)
+    parser.add_argument('-A', help="element on A-site",type=str,default='Ba')
+    parser.add_argument('-B', help="element on B-site",type=str,default='Zr')
+    parser.add_argument('-X', help="element on X-site",type=str,default='S')
+    parser.add_argument('-r', '--rattle', help="apply small random displacement to all atoms", type=bool, default=False)
+    parser.add_argument('-s', '--save', help="save structure as cif file", type=bool, default=True)
 
     args = parser.parse_args()
 
