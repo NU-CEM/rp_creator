@@ -1,65 +1,106 @@
 import argparse
 import ase
 from ase import Atoms
+from ase import io
 import numpy as np
-# makes from I4/mmm tetragonal structure.
-# make sure you relax with varying cell size
-# make sure you relax with random displacement
 
-def get_chemical_formula(A,B,X,n_array):
+"""Script to generate (disordered) Ruddlesden Popper structure with any n-value. 
+Multiple n-values will create a disordered Ruddlesden Popper structure.
+For example, `rp_generator -n 5,6` will create 5 perovskite layers + rocksalt layer + 6 perovskite layers + rocksalt layer.
+Whilst `rp_generator -n 3` will create the standard RP material A4B3X10.
+Creates phase in a high-symmetry tetragonal structure.
+After creating this structure you will need to relax to find the equilibrium structure. 
+Importantly, you must allow the atomic positions and cell volume to relax.
+You most likely also want to use the `rattle` option to break symmetry and allow for distortions to lower symmetry.
+
+Use with caution as this hasn't been thoroughly tested.
+"""
+
+def perovskite_atoms(A,B,X,cell_length):
+    """Returns single perovskite layer"""
     
-    x = str(np.sum(n_array+1))
-    y = str(np.sum(n_array))
-    z = str(np.sum(3*(n_array)+1))
+    return Atoms([A,B,X,X,X], 
+           scaled_positions=[(0.5,0.5,0.5),(0,0,0),(0.5,0,0),(0,0,0.5),(0,0.5,0)],
+           cell=[cell_length,cell_length,cell_length,90,90,90])
 
-	return A+x+B+y+X+z
+def rocksalt_atoms(A,X,cell_length):
+    """Returns rocksalt layer"""
+    
+    return Atoms([A,X], 
+           scaled_positions=[(0,0,0),(0.5,0.5,0)],
+           # note that the third parameter for cell can be set to any positive number 
+           cell=[cell_length,cell_length,1,90,90,90])
 
-def perovskite_layer(A,B,X,X,X):
-	return Atoms([A,B,X], 
-		         positions=[(0.5,0.5,0.5),(0,0,0),(0.5,0.5,0),(0.5,0,0.5),(0,0.5,0.5)])
+def save_structure(atoms_object,n_array,A,B,X):
+    """Save structure as cif"""
 
-def rocksalt_layer(A,X):
-	return Atoms([A,X], 
-		         positions=[(0,0,0),(0.5,0.5,0)])
+    ase.io.write('RP_{}_{}.cif'.format(''.join(map(str,n_array)),A+B+X), atoms_object)
 
-def create_rp_structure(A,B,X,n_array,a, b, perovskite_spacing,rocksalt_spacing):
+def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,save=True):
+    """Returns (disordered) RP phase as an ASE atoms object.
+    """
 
-	rp_structure = Atoms()
+    # if the number of n-values is odd then we must double the array to make even.
+    # This is to ensure that when pbc is applied
+    # the neighbouring perovskite slabs are correctly offset from one-another
+    if len(n_array) % 2 == 1:
+        n_array = np.concatenate((n_array,n_array))
 
-	for number_of_layers in n_array:
-		for layer_count in range(number_of_layers):
-			rp_structure += perovskite_layer(A,B,X).translate([0,0,perovskite_spacing*layer_count])
-		rp_structure += rocksalt_layer(A,X).translate([0,perovskite_spacing*layer_count+rocksalt_spacing])
+    # we need to create structure and apply pbc before adding in the perovskite and rocksalt layers
+    total_length = np.sum(n_array)*1*cell_length + len(n_array)*0.5*cell_length 
+    rp_structure = Atoms(cell=[cell_length,cell_length,total_length,90,90,90],pbc=[True,True,True])
 
-	return Atoms
+    # create perovskite and rocksalt layer
+    perovskite_layer = perovskite_atoms(A,B,X,cell_length)
+    rocksalt_layer = rocksalt_atoms(A,X,cell_length)
 
-def rattle_structure(Atoms):
+    # for each slab of perovskite
+    for number_of_layers in n_array:
+        
+        # for each perovskite layer within the slab
+        for _ in range(number_of_layers):
+            
+            # add a perovskite layer to the rp_structure
+            rp_structure += perovskite_layer
+            # translate the perovskite and rocksalt layers along c-axis ready for next insertion
+            perovskite_layer.translate(np.dot([0,0,1],perovskite_layer.cell))
+            rocksalt_layer.translate(np.dot([0,0,1],perovskite_layer.cell))
+        
+        # after creating perovksite slab, add a rocksalt layer
+        rp_structure += rocksalt_layer
+        # translate the perovskite and rocksalt layers along c-axis ready for next insertion
+        # also translate the rocksalt and perovskite layers in the ab-plane
+        rocksalt_layer.translate(np.dot([0.5,0.5,0.5],perovskite_layer.cell))
+        perovskite_layer.translate(np.dot([0.5,0.5,0.5],perovskite_layer.cell))
 
-	return Atoms.rattle(stdev=0.02, seed=1)
+    if rattle:
+        rp_structure.rattle(stdev=0.02, seed=1)
 
-def save_structure(Atoms,n_array,A,B,X):
+    if save:
+        save_structure(rp_structure,n_array,A,B,X)
 
-	ase.io.write('RP_{}_{}.cif'.format(''.join(map(str,n_array)),A+B+X), Atoms)
+    return rp_structure
 
 
 if __name__ == "__main__":
 
-	parser = argparse.ArgumentParser(description='Script to generate (mixed) Ruddlesden Popper structure')
-	parser.add_argument('n', help='the number of perovskite layers between each rocksalt layer. Multiple n values will create a mixed Ruddlesden Popper structure with various n-values as specified.',type=int, nargs="+" )
-	parser.add_argument('--a_length', help="specify the in-plane primitive lattice vector a",type=float, default=)
-	parser.add_argument('--b_length', help="specify the in-plane primitive lattice vector b",type=float,default=)
-	parser.add_argument('--perovskite_spacing', help="specify the distance between perovskite-perovksite layers",type=float)
-	parser.add_argument('--rocksalt_spacing', help="specify the distance between rocksalt layers",type=float)
-	parser.add_argument('--A', help="element on A-site",type='str',default='Ba')
-	parser.add_argument('--B', help="element on B-site",type='str',default='Zr')
-    parser.add_argument('--X', help="element on X-site",type='str',default='S')
-    parser.add_argument('--random', help="apply random displacement to all atoms", type=bool, default=False)
+    parser = argparse.ArgumentParser(description='Script to generate (disordered) Ruddlesden Popper structure')
+    parser.add_argument('-n', help='the number of perovskite layers between each rocksalt layer.',type=int, nargs="+" )
+    parser.add_argument('--cell_length', '-a', help="the cell length of a single perovskite unit",type=float, default=5.0)
+    parser.add_argument('--A', help="element on A-site",type=str,default='Ba')
+    parser.add_argument('--B', help="element on B-site",type=str,default='Zr')
+    parser.add_argument('--X', help="element on X-site",type=str,default='S')
+    parser.add_argument('--rattle', help="apply small random displacement to all atoms", type=bool, default=False)
+    parser.add_argument('--save', help="save structure as cif file", type=bool, default=True)
 
     args = parser.parse_args()
 
+    create_disordered_rp(np.array(args.n),
+                         A=args.A,
+                         B=args.B,
+                         X=args.X,
+                         cell_length=args.cell_length,
+                         rattle=args.rattle,
+                         save=args.save)
 
-    if rattle:
-    	RP_atoms = rattle_structure()
-
-    save_structure(RP_atoms)
 
