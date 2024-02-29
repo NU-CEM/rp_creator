@@ -7,7 +7,7 @@ For example:
 - `rp_generator -n 5 6` will create 5 perovskite layers + rocksalt layer + 6 perovskite layers + rocksalt layer.
 - `rp_generator -n 3` will create the standard RP material A<sub>4</sub>B<sub>3</sub>X<sub>10</sub>.
 
-Creates phase in a high-symmetry tetragonal structure.
+Creates material in a high-symmetry tetragonal structure.
 After creating this structure you will need to relax to find the equilibrium structure. 
 Importantly, you must allow the atomic positions **and** cell volume to relax.
 You most likely also want to use the `rattle` option to break symmetry and allow for distortions to lower symmetry.
