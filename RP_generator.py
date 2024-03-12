@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+
 import argparse
 import numpy as np
 import ase
@@ -103,7 +105,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--rattle', help="apply small random displacement to all atoms", type=bool, default=False)
     parser.add_argument('-s', '--save', help="save structure as file", type=bool, default=True)
     parser.add_argument('-f', '--filetype', help="filetype to save as", type=str, default='cif')
-    parser.add_argument('-p', '--primitive', help="generate primitive cell", type=bool, default=True)
+    parser.add_argument('-p', '--primitive', help="generate primitive cell", type=bool, default=False)
 
     args = parser.parse_args()
 
