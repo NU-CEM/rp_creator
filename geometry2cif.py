@@ -4,12 +4,12 @@ import spglib
 import ase
 import ase.io
 
-filename_out = sys.argv[1]
-
-atoms = ase.io.read("geometry.in")
+filename_out = sys.argv[2]
+filename_in = sys.argv[1]
+atoms = ase.io.read(filename_in,format='aims')
 spg_cell = (atoms.cell, atoms.get_scaled_positions(), atoms.numbers)
 new_unit_cell, new_scaled_positions, new_numbers = spglib.standardize_cell(spg_cell, to_primitive=False, symprec=5e-3)
 conventional_atoms = ase.Atoms(new_numbers, cell=new_unit_cell, scaled_positions=new_scaled_positions)
 
-ase.io.write(filename_out,conventional_atoms)
+ase.io.write(filename_out,conventional_atoms,format='cif')
 

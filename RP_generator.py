@@ -31,12 +31,12 @@ def rocksalt_atoms(A,X,cell_length):
            # note that the third parameter for cell can be set to any positive number 
            cell=[cell_length,cell_length,1,90,90,90])
 
-def save_structure(atoms_object,n_array,A,B,X):
+def save_structure(atoms_object,n_array,A,B,X,filetype='cif'):
     """Save structure as cif"""
 
-    ase.io.write('RP_{}_{}.cif'.format(''.join(map(str,n_array)),A+B+X), atoms_object)
+    ase.io.write('RP_{}_{}'.format(''.join(map(str,n_array)),A+B+X), atoms_object,format=filetype)
 
-def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,save=True):
+def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,save=True,filetype='cif'):
     """Returns (disordered) RP phase as an ASE atoms object.
     """
 
@@ -77,7 +77,7 @@ def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,
         rp_structure.rattle(stdev=0.05, seed=1)
 
     if save:
-        save_structure(rp_structure,n_array,A,B,X)
+        save_structure(rp_structure,n_array,A,B,X,filetype=filetype)
 
     return rp_structure
 
@@ -91,7 +91,8 @@ if __name__ == "__main__":
     parser.add_argument('-B', help="element on B-site",type=str,default='Zr')
     parser.add_argument('-X', help="element on X-site",type=str,default='S')
     parser.add_argument('-r', '--rattle', help="apply small random displacement to all atoms", type=bool, default=False)
-    parser.add_argument('-s', '--save', help="save structure as cif file", type=bool, default=True)
+    parser.add_argument('-s', '--save', help="save structure as file", type=bool, default=True)
+    parser.add_argument('-f', '--filetype', help="filetype to save as", type=str, default='cif')
 
     args = parser.parse_args()
 
@@ -101,6 +102,7 @@ if __name__ == "__main__":
                          X=args.X,
                          cell_length=args.cell_length,
                          rattle=args.rattle,
-                         save=args.save)
+                         save=args.save,
+                         filetype=args.filetype)
 
 
