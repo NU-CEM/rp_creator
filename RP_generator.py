@@ -1,8 +1,12 @@
 import argparse
+import numpy as np
 import ase
+import spglib
+
 from ase import Atoms
 from ase import io
-import numpy as np
+from spglib import standardize_cell
+
 
 """Script to generate (disordered) Ruddlesden Popper structure with any n-value. 
 Multiple n-values will create a disordered Ruddlesden Popper structure.
@@ -36,7 +40,7 @@ def save_structure(atoms_object,n_array,A,B,X,filetype='cif'):
 
     ase.io.write('RP_{}_{}'.format(''.join(map(str,n_array)),A+B+X), atoms_object,format=filetype)
 
-def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,save=True,filetype='cif'):
+def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,save=True,filetype='cif',primitive=True):
     """Returns (disordered) RP phase as an ASE atoms object.
     """
 
@@ -76,6 +80,12 @@ def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,
     if rattle:
         rp_structure.rattle(stdev=0.05, seed=1)
 
+    if primitive:
+        spg_cell = (rp_structure.cell, rp_structure.get_scaled_positions(), rp_structure.numbers)
+        spg_cell_primitive = standardize_cell(spg_cell, to_primitive=True, symprec=5e-3)
+        primitive_cell, primitive_positions, primitive_numbers = spg_cell_primitive
+        rp_structure = Atoms(primitive_numbers, cell=primitive_cell, scaled_positions=primitive_positions)
+        
     if save:
         save_structure(rp_structure,n_array,A,B,X,filetype=filetype)
 
@@ -93,6 +103,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--rattle', help="apply small random displacement to all atoms", type=bool, default=False)
     parser.add_argument('-s', '--save', help="save structure as file", type=bool, default=True)
     parser.add_argument('-f', '--filetype', help="filetype to save as", type=str, default='cif')
+    parser.add_argument('-p', '--primitive', help="generate primitive cell", type=bool, default=True)
 
     args = parser.parse_args()
 
@@ -103,6 +114,7 @@ if __name__ == "__main__":
                          cell_length=args.cell_length,
                          rattle=args.rattle,
                          save=args.save,
-                         filetype=args.filetype)
+                         filetype=args.filetype,
+                         primitive=args.primitive)
 
 
