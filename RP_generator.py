@@ -38,7 +38,7 @@ def rocksalt_atoms(A,X,cell_length):
 def save_structure(atoms_object,n_array,A,B,X,filetype='cif'):
     """Save structure as cif"""
 
-    ase.io.write('RP_{}_{}'.format(''.join(map(str,n_array)),A+B+X), atoms_object,format=filetype)
+    ase.io.write('RP_{}_{}.{}'.format(''.join(map(str,n_array)),A+B+X,filetype), atoms_object,format=filetype)
 
 def create_disordered_rp(n_array,A='Ba',B='Zr',X='S',cell_length=5,rattle=False,save=True,filetype='cif',primitive=True):
     """Returns (disordered) RP phase as an ASE atoms object.
