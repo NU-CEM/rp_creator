@@ -21,7 +21,7 @@ To see which command line options are available run `python rp_generator.py --he
 
 In both examples the lattice parameter of a single cubic perovskite unit is set to 5 Ångström.
 
-![Picture of structures formed in example](./example_structures.png)
+![Picture of structures formed in example](./RP.png)
 
 
 
