@@ -4,7 +4,7 @@ Script to generate (disordered) Ruddlesden-Popper structure with any n-value.
 Multiple n-values will create a "disordered" Ruddlesden Popper structure.
 
 ⭐ Creates material in a high-symmetry tetragonal structure.  
-⭐ After creating you must relax the atom positions **and** lattice parameters to find equilibrium structure.  
+⭐ After creating you must relax the atom positions **and** lattice parameters to find equilibrium structure. Do not enforce symmetry.
 ⭐ You may also want to use the `rattle` option to allow for distortions to lower symmetry.  
 ⭐ Can be saved any structure format supported by [ASE](https://wiki.fysik.dtu.dk/ase/).  
 ⭐ Can be created as conventional or primitive cell.  
